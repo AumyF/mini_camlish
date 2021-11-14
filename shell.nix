@@ -6,6 +6,7 @@
     pkgs.ocamlPackages.ocaml-lsp
     pkgs.ocamlPackages.containers
     pkgs.ocamlPackages.alcotest
+    pkgs.inotify-tools
     pkgs.ocamlPackages.utop
     pkgs.ocamlformat
     pkgs.ocamlPackages.ocamlformat-rpc-lib
