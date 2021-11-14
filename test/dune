@@ -1,2 +1,3 @@
 (test
- (name mini_ocaml))
+ (name test)
+ (libraries alcotest mini_ocaml))

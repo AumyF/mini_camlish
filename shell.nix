@@ -4,6 +4,8 @@
     pkgs.ocamlPackages.findlib
     pkgs.dune_2
     pkgs.ocamlPackages.ocaml-lsp
+    pkgs.ocamlPackages.containers
+    pkgs.ocamlPackages.alcotest
     pkgs.ocamlPackages.utop
     pkgs.ocamlformat
     pkgs.ocamlPackages.ocamlformat-rpc-lib

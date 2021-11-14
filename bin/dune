@@ -1,4 +1,4 @@
 (executable
  (public_name mini_ocaml)
  (name main)
- (libraries mini_ocaml))
+ (libraries mini_ocaml containers))

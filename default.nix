@@ -4,5 +4,8 @@
   useDune2 = true;
   src =
     ./.;
-  nativeBuildInputs = [ ];
+  nativeBuildInputs = [
+    pkgs.ocamlPackages.containers
+    pkgs.ocamlPackages.alcotest
+  ];
 }

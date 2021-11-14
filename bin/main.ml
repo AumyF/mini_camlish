@@ -96,6 +96,8 @@ let eval3_with_emptyenv e = eval3 e []
 let string_of_value v =
   match v with IntVal n -> string_of_int n | BoolVal b -> string_of_bool b
 
-let () =
+let check =
   Let ("x", Plus (IntLiteral 4, IntLiteral 3), Plus (VarRef "x", IntLiteral 3))
   |> eval3_with_emptyenv |> string_of_value |> print_endline
+
+let () = check
