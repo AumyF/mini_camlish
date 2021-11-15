@@ -91,8 +91,7 @@ let match_latin_ascii = match_lowercase_ascii <|> match_capital_ascii
 let match_alphanumetic_ascii = match_latin_ascii <|> match_digit
 
 let match_space =
-  let p = function ' ' | '\t' | '\n' | '\r' -> true | _ -> false in
-  p
+  satisfy (function ' ' | '\t' | '\n' | '\r' -> true | _ -> false)
 
 let get_middle = get_char *> get_char <* get_char
 
@@ -123,3 +122,7 @@ let match_int = match_nat <|> (( ~- ) <$> match_char '-' *> match_nat)
 let match_identifier =
   String.of_list
   <$> (List.cons <$> match_lowercase_ascii <*> many match_alphanumetic_ascii)
+
+let get_token p =
+  let spaces = many match_space in
+  spaces *> p <* spaces

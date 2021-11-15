@@ -58,7 +58,7 @@ val match_latin_ascii : char t
 
 val match_alphanumetic_ascii : char t
 
-val match_space : char -> bool
+val match_space : char t
 
 val get_middle : char t
 
@@ -73,3 +73,5 @@ val match_nat : int t
 val match_int : int t
 
 val match_identifier : string t
+
+val get_token : 'a t -> 'a t
