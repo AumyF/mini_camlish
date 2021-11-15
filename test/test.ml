@@ -49,21 +49,51 @@ let test_some () =
     Parser.(parse_string (some (match_char 'f')) "efff")
 
 let test_many () =
+  let parse ch = Parser.(parse_string (many (match_char ch))) in
   Alcotest.(check (char |> list |> parse_result))
     "correctly parse many"
     (Some ([ 'f'; 'f'; 'f' ], [ 'b'; 'a'; 'r' ]))
-    Parser.(parse_string (many (match_char 'f')) "fffbar");
+    (parse 'f' "fffbar");
 
   Alcotest.(check (char |> list |> parse_result))
     "succeeds in parsing with string which contains zero f's"
     (Some ([], [ 'e'; 'f'; 'f'; 'f' ]))
-    Parser.(parse_string (many (match_char 'f')) "efff")
+    (parse 'f' "efff")
 
 let test_match_nat () =
+  let parse_string = Parser.(parse_string match_nat) in
+
   Alcotest.(check (int |> parse_result))
-    "succeeds in parsing with string starts with a natural number"
+    "succeeds in parsing with string starts with a positive number"
     (Some (12345, [ 'f'; 'o'; 'o' ]))
-    Parser.(parse_string match_nat "12345foo")
+    (parse_string "12345foo");
+
+  Alcotest.(check (int |> parse_result))
+    "succeeds in parsing with string starts with a 0"
+    (Some (0, [ 'f'; 'o'; 'o' ]))
+    (parse_string "0foo");
+
+  Alcotest.(check (int |> parse_result))
+    "fails in parsing with string starts with a negative number" None
+    (parse_string "-1321baz")
+
+let test_match_int () =
+  let parse_string = Parser.(parse_string match_int) in
+
+  Alcotest.(check (int |> parse_result))
+    "succeeds in parsing with string starts with a positive number"
+    (Some (1321, [ 'b'; 'a'; 'z' ]))
+    (parse_string "1321baz");
+
+  Alcotest.(check (int |> parse_result))
+    "succeeds in parsing with string starts with a negative number"
+    (Some (-1321, [ 'b'; 'a'; 'z' ]))
+    (parse_string "-1321baz");
+
+  Alcotest.(check (int |> parse_result))
+    "succeeds in parsing with string starts with a -0"
+    (Some (0, [ 'b'; 'a'; 'z' ]))
+    (parse_string "-0baz")
 
 let () =
   Alcotest.run "Parser"
@@ -77,5 +107,9 @@ let () =
           Alcotest.test_case "parse_some" `Quick test_some;
           Alcotest.test_case "parse_many" `Quick test_many;
         ] );
-      ("numeric", [ Alcotest.test_case "match_nat" `Quick test_match_nat ]);
+      ( "numeric",
+        [
+          Alcotest.test_case "match_nat" `Quick test_match_nat;
+          Alcotest.test_case "match_int" `Quick test_match_int;
+        ] );
     ]

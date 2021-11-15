@@ -69,3 +69,5 @@ val many : 'a t -> 'a list t
 val some : 'a t -> 'a list t
 
 val match_nat : int t
+
+val match_int : int t
