@@ -37,6 +37,14 @@ let test_some () =
     Parser.(parse_string (many (match_char 'f')) "fffbar");
 
   Alcotest.(check (char |> list |> parse_result))
+    "correctly parse some"
+    (Some ([ 'x'; 'y'; 'z'; 'x'; 'y'; 'z'; 'x'; 'z'; 'y' ], [ 'b'; 'a'; 'r' ]))
+    Parser.(
+      parse_string
+        (many (satisfy (function 'x' .. 'z' -> true | _ -> false)))
+        "xyzxyzxzybar");
+
+  Alcotest.(check (char |> list |> parse_result))
     "succeeds in parsing with string which contains zero f's" None
     Parser.(parse_string (some (match_char 'f')) "efff")
 

@@ -110,7 +110,7 @@ let some (p : 'a t) =
   let purep = map Option.pure p <|> pure None in
   let rec inner acc =
     let* ch = purep in
-    match ch with None -> pure acc | Some ch -> inner (ch :: acc)
+    match ch with None -> pure acc | Some ch -> inner List.(append acc [ ch ])
   in
   inner [ first ]
 
