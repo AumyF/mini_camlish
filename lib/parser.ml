@@ -119,3 +119,7 @@ let many p = some p <|> pure []
 let match_nat = int_of_string <$> (String.of_list <$> some match_digit)
 
 let match_int = match_nat <|> (( ~- ) <$> match_char '-' *> match_nat)
+
+let match_identifier =
+  String.of_list
+  <$> (List.cons <$> match_lowercase_ascii <*> many match_alphanumetic_ascii)

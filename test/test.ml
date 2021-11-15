@@ -95,6 +95,20 @@ let test_match_int () =
     (Some (0, [ 'b'; 'a'; 'z' ]))
     (parse_string "-0baz")
 
+let test_match_identifier () =
+  let parse = Parser.(parse_string match_identifier) in
+
+  Alcotest.(check (string |> parse_result))
+    "succeeds in parsing with string starts with a lowercase"
+    (Some ("abc", [ ' '; 'f'; 'o' ]))
+    (parse "abc fo");
+
+  Alcotest.(check (string |> parse_result))
+    "succeeds in parsing with string starts with a lowercase and includes some \
+     digits"
+    (Some ("e38182", [ ' '; 'f'; 'o' ]))
+    (parse "e38182 fo")
+
 let () =
   Alcotest.run "Parser"
     [
@@ -112,4 +126,5 @@ let () =
           Alcotest.test_case "match_nat" `Quick test_match_nat;
           Alcotest.test_case "match_int" `Quick test_match_int;
         ] );
+      ("ident", [ Alcotest.test_case "match_nat" `Quick test_match_identifier ]);
     ]
