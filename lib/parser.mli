@@ -67,3 +67,5 @@ val get_string : string -> string t
 val many : 'a t -> 'a list t
 
 val some : 'a t -> 'a list t
+
+val match_nat : int t

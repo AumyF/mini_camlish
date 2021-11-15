@@ -59,6 +59,12 @@ let test_many () =
     (Some ([], [ 'e'; 'f'; 'f'; 'f' ]))
     Parser.(parse_string (many (match_char 'f')) "efff")
 
+let test_match_nat () =
+  Alcotest.(check (int |> parse_result))
+    "succeeds in parsing with string starts with a natural number"
+    (Some (12345, [ 'f'; 'o'; 'o' ]))
+    Parser.(parse_string match_nat "12345foo")
+
 let () =
   Alcotest.run "Parser"
     [
@@ -71,4 +77,5 @@ let () =
           Alcotest.test_case "parse_some" `Quick test_some;
           Alcotest.test_case "parse_many" `Quick test_many;
         ] );
+      ("numeric", [ Alcotest.test_case "match_nat" `Quick test_match_nat ]);
     ]

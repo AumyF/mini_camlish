@@ -115,3 +115,5 @@ let some (p : 'a t) =
   inner [ first ]
 
 let many p = some p <|> pure []
+
+let match_nat = int_of_string <$> (String.of_list <$> some match_digit)
