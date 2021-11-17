@@ -24,11 +24,11 @@ let test_ipv4 () =
     (Some ("1", []))
     Parser.(parse_string parse_ipv4_address "1")
 
-let test_get_string () =
+let test_match_string () =
   Alcotest.(check (parse_result string))
     "correctly parse string"
     (Some ("foo", [ 'b'; 'a'; 'r' ]))
-    Parser.(parse_string (get_string "foo") "foobar")
+    Parser.(parse_string (match_string "foo") "foobar")
 
 let test_some () =
   Alcotest.(check (char |> list |> parse_result))
@@ -109,13 +109,26 @@ let test_match_identifier () =
     (Some ("e38182", [ ' '; 'f'; 'o' ]))
     (parse "e38182 fo")
 
+let test_get_list_of_uints () =
+  let parse = Parser.(parse_string get_list_of_uints) in
+
+  Alcotest.(check (int |> list |> parse_result))
+    "succeeds in parsing list of uints"
+    (Some ([ 1; 2; 3 ], [ ' '; 'f'; 'u' ]))
+    (parse "[1; 2; 3] fu");
+
+  Alcotest.(check (int |> list |> parse_result))
+    "succeeds in parsing list of uints with a trailing semicolon"
+    (Some ([ 1; 2; 3 ], [ ' '; 'f'; 'u' ]))
+    (parse "[1; 2; 3;] fu")
+
 let () =
   Alcotest.run "Parser"
     [
       ("parse", [ Alcotest.test_case "parse_result" `Quick test_middle ]);
       ("parse_ipv4", [ Alcotest.test_case "parse_ipv4" `Quick test_ipv4 ]);
       ( "parse_string",
-        [ Alcotest.test_case "parse_string" `Quick test_get_string ] );
+        [ Alcotest.test_case "parse_string" `Quick test_match_string ] );
       ( "some/many",
         [
           Alcotest.test_case "parse_some" `Quick test_some;

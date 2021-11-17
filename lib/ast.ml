@@ -20,7 +20,7 @@ let ext env x v = (x, v) :: env
 (* 環境に変数が含まれているか探す。なかったら例外 *)
 let rec lookup x env =
   match env with
-  | [] -> failwith "unbound variable"
+  | [] -> failwith ("unbound variable " ^ x)
   | (y, v) :: t -> if x = y then v else lookup x t
 
 (* let rec eval1 e =
@@ -69,6 +69,7 @@ let rec eval3 e env =
   match e with
   | VarRef x -> lookup x env
   | IntLiteral n -> IntVal n
+  | BoolLiteral b -> BoolVal b
   | Plus (e1, e2) -> binop ( + ) (e1, e2) env
   | Times (e1, e2) -> binop ( * ) (e1, e2) env
   | Subtract (e1, e2) -> binop ( - ) (e1, e2) env
@@ -89,7 +90,7 @@ let rec eval3 e env =
   | Let (varname, varexp, rest) ->
       let env = ext env varname (eval3 varexp env) in
       eval3 rest env
-  | _ -> failwith ""
+(* | _ -> failwith "unimplemented" *)
 
 let eval3_with_emptyenv e = eval3 e []
 

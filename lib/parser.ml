@@ -95,7 +95,7 @@ let match_space =
 
 let get_middle = get_char *> get_char <* get_char
 
-let get_string str =
+let match_string str =
   let rec f = function
     | [] -> pure []
     | ch :: chars ->
@@ -126,3 +126,19 @@ let match_identifier =
 let get_token p =
   let spaces = many match_space in
   spaces *> p <* spaces
+
+let get_identifier = get_token match_identifier
+
+let get_unsigned_int = get_token match_nat
+
+let get_int = get_token match_int
+
+let get_symbol s = get_token (match_string s)
+
+let get_list_of_uints =
+  let+ _ = get_symbol "["
+  and+ n = get_unsigned_int
+  and+ ns = many (get_symbol ";" *> get_unsigned_int)
+  and+ _ = get_symbol ";" <|> pure ""
+  and+ _ = get_symbol "]" in
+  n :: ns
