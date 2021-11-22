@@ -6,6 +6,8 @@
     pkgs.ocamlPackages.ocaml-lsp
     pkgs.ocamlPackages.containers
     pkgs.ocamlPackages.alcotest
+    pkgs.ocamlPackages.ppx_deriving
+    pkgs.ocamlPackages.ppxlib
     pkgs.inotify-tools
     pkgs.ocamlPackages.utop
     pkgs.ocamlformat

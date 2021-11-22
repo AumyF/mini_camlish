@@ -10,6 +10,7 @@ module Expression = struct
     | BoolLiteral of bool
     | If of t * t * t
     | Eq of t * t
+  [@@deriving eq, show]
 end
 
 type value = IntVal of int | BoolVal of bool

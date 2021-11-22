@@ -9,7 +9,7 @@ let check =
 
 let c =
   let exp, _ =
-    Oc_parser.(Parser.parse_string value "4 - 3 + 2")
+    Oc_parser.(Parser.parse_string value "let x = 4 + 3 in x + 2")
     |> Option.get_exn_or "parse error"
   in
   print_endline "parse complete.";

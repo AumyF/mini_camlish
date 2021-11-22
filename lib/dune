@@ -1,3 +1,5 @@
 (library
  (name mini_ocaml)
- (libraries containers))
+ (libraries containers)
+ (preprocess
+  (pps ppx_deriving.eq ppx_deriving.show)))
