@@ -2,37 +2,37 @@ open Containers
 
 let unimplemented name = failwith (name ^ "is not implemented!")
 
-type 'a result = ('a * char list) option
+module Result = struct
+  type 'a t = ('a * char list) option
 
-type 'a t = Parser of (char list -> 'a result)
+  let pp = ""
+end
 
-let parse (Parser p) chars = chars |> p
+type 'a t = char list -> 'a Result.t
 
-let parse_string (Parser p) s = s |> String.to_list |> p
+let parse p chars = chars |> p
 
-let get_char = Parser (function [] -> None | c :: cs -> Some (c, cs))
+let parse_string p s = s |> String.to_list |> p
 
-let map f p =
-  Parser
-    (fun chars ->
-      match parse p chars with
-      | None -> None
-      | Some (v, chars') -> Some (f v, chars'))
+let get_char = function [] -> None | c :: cs -> Some (c, cs)
+
+let map f p chars =
+  match parse p chars with
+  | None -> None
+  | Some (v, chars') -> Some (f v, chars')
 
 let ( <$> ) = map
 
 (** Parser which always succeeds. *)
-let pure v = Parser (fun chars -> Some (v, chars))
+let pure v chars = Some (v, chars)
 
 (** Parser which always fails. *)
-let empty = Parser (fun _ -> None)
+let empty _ = None
 
-let apply (p_f : ('a -> 'b) t) p_a =
-  Parser
-    (fun chars ->
-      match parse p_f chars with
-      | None -> None
-      | Some (f, chars') -> parse (map f p_a) chars')
+let apply (p_f : ('a -> 'b) t) p_a chars =
+  match parse p_f chars with
+  | None -> None
+  | Some (f, chars') -> parse (map f p_a) chars'
 
 let ( <*> ) = apply
 
@@ -47,20 +47,16 @@ let ( let+ ) x f = map f x
 let ( and+ ) xa ya = product xa ya
 
 (** If `xp` suceeds returns its result. Otherwise returns `yp`'s one. *)
-let either xp yp =
-  Parser
-    (fun chars ->
-      match parse xp chars with None -> parse yp chars | Some _ as r -> r)
+let either xp yp chars =
+  match parse xp chars with None -> parse yp chars | Some _ as r -> r
 
 (** Binary operator version of `either`. If left parser suceeds returns its result. Otherwise returns right side's one. *)
 let ( <|> ) = either
 
-let bind (xp : 'a t) (fp : 'a -> 'b t) =
-  Parser
-    (fun chars ->
-      match parse xp chars with
-      | None -> None
-      | Some (x, chars') -> parse (fp x) chars')
+let bind (xp : 'a t) (fp : 'a -> 'b t) chars =
+  match parse xp chars with
+  | None -> None
+  | Some (x, chars') -> parse (fp x) chars'
 
 let ( >>= ) = bind
 
@@ -114,6 +110,21 @@ let some (p : 'a t) =
   inner [ first ]
 
 let many p = some p <|> pure []
+
+(* let chainl1 x op =
+   let rec loop a =
+     (let* op = op in
+      let* b = x in
+      loop (op a b))
+     <|> pure a
+   in
+   x >>= loop *)
+
+let chainl1 x op =
+  let rec loop a = op >>= (fun op -> x >>= fun b -> loop (op a b)) <|> pure a in
+  x >>= loop
+
+let chainl x op default = chainl1 x op <|> pure default
 
 let match_nat = int_of_string <$> (String.of_list <$> some match_digit)
 

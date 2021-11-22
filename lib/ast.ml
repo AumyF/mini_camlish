@@ -1,14 +1,16 @@
-type exp =
-  | VarRef of string
-  | Let of string * exp * exp
-  | IntLiteral of int
-  | Plus of exp * exp
-  | Times of exp * exp
-  | Subtract of exp * exp
-  | Div of exp * exp
-  | BoolLiteral of bool
-  | If of exp * exp * exp
-  | Eq of exp * exp
+module Expression = struct
+  type t =
+    | VarRef of string
+    | Let of string * t * t
+    | IntLiteral of int
+    | Plus of t * t
+    | Times of t * t
+    | Subtract of t * t
+    | Div of t * t
+    | BoolLiteral of bool
+    | If of t * t * t
+    | Eq of t * t
+end
 
 type value = IntVal of int | BoolVal of bool
 
@@ -23,42 +25,6 @@ let rec lookup x env =
   | [] -> failwith ("unbound variable " ^ x)
   | (y, v) :: t -> if x = y then v else lookup x t
 
-(* let rec eval1 e =
-   match e with
-   | IntLiteral n -> n
-   | Plus (e1, e2) -> eval1 e1 + eval1 e2
-   | Times (e1, e2) -> eval1 e1 * eval1 e2
-   | Subtract (e1, e2) -> eval1 e1 - eval1 e2
-   | Div (e1, e2) -> eval1 e1 / eval1 e2 *)
-(* | _ -> failwith "unimplemented expression" *)
-
-let rec eval2 e =
-  let binop f (e1, e2) =
-    match (eval2 e1, eval2 e2) with
-    | IntVal n1, IntVal n2 -> IntVal (f n1 n2)
-    | _ -> failwith "integer expected"
-  in
-  match e with
-  | IntLiteral n -> IntVal n
-  | Plus (e1, e2) -> binop ( + ) (e1, e2)
-  | Times (e1, e2) -> binop ( * ) (e1, e2)
-  | Subtract (e1, e2) -> binop ( - ) (e1, e2)
-  | Div (e1, e2) ->
-      binop
-        (fun n1 n2 -> if n2 = 0 then failwith "division by zero" else n1 / n2)
-        (e1, e2)
-  | Eq (e1, e2) -> (
-      match (eval2 e1, eval2 e2) with
-      | IntVal n1, IntVal n2 -> BoolVal (n1 = n2)
-      | BoolVal n1, BoolVal n2 -> BoolVal (n1 = n2)
-      | _ -> failwith "types unmatch")
-  | If (predicate, then_exp, else_exp) -> (
-      match eval2 predicate with
-      | BoolVal true -> eval2 then_exp
-      | BoolVal false -> eval2 else_exp
-      | _ -> failwith "predicate is not of type bool")
-  | _ -> failwith ""
-
 let rec eval3 e env =
   let binop f (e1, e2) env =
     let eval e = eval3 e env in
@@ -66,6 +32,7 @@ let rec eval3 e env =
     | IntVal n1, IntVal n2 -> IntVal (f n1 n2)
     | _ -> failwith "integer expected"
   in
+  let open Expression in
   match e with
   | VarRef x -> lookup x env
   | IntLiteral n -> IntVal n
