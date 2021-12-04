@@ -66,14 +66,10 @@ let get_else = get_symbol "else"
 
 (* Exprssions ----- *)
 
+(** Parses a variable reference. *)
 let get_varref = map (fun varname -> Expression.VarRef varname) get_identifier
 
-let tap p =
-  map
-    (fun x ->
-      print_endline x;
-      x)
-    p
+let p_eq = get_equal *> pure (fun l r -> Expression.Eq (l, r))
 
 let p_add = get_plus *> pure (fun l r -> Expression.Plus (l, r))
 
@@ -87,17 +83,31 @@ let get_div =
   let+ _ = get_slash in
   fun lhs rhs -> Expression.Div (lhs, rhs)
 
-let rec get_add_sub i = chainl1 term (p_add <|> p_subtract) i
+let rec expr_9 i = (get_let_in <|> get_if_then_else <|> expr_6) i
+
+and get_equal_expr i = chainl1 expr_4 p_eq i
+
+and expr_6 i = (get_equal_expr <|> expr_4) i
+
+and get_add_sub i = chainl1 expr_3 (p_add <|> p_subtract) i
+
+and expr_4 i = (get_add_sub <|> expr_3) i
 
 (* and get_mul i = chainl1 value (get_multiply <|> get_div) i *)
 
 (* and value i = (get_let_in <|> get_varref <|> get_int_literal <|> get_add) i *)
-and term i =
-  (get_let_in <|> get_if_then_else <|> get_bool_literal <|> get_varref
- <|> get_int_literal)
-    i
 
-and value i = (get_add_sub <|> term) i
+and get_multiply_divide i = chainl1 expr_2 (get_multiply <|> get_div) i
+
+and expr_3 i = (get_multiply_divide <|> expr_2) i
+
+and paren_expr i = (get_paren_left *> expr_2 <* get_paren_right) i
+
+and expr_2 i = (paren_expr <|> expr_0) i
+
+and expr_0 i = (get_bool_literal <|> get_varref <|> get_int_literal) i
+
+and value i = expr_9 i
 
 and get_if_then_else i =
   (let+ _ = get_if

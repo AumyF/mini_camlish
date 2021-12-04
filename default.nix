@@ -5,7 +5,9 @@
   src =
     ./.;
   nativeBuildInputs = [
-    pkgs.ocamlPackages.containers
     pkgs.ocamlPackages.alcotest
+    pkgs.ocamlPackages.containers
+    pkgs.ocamlPackages.ppx_deriving
+    pkgs.ocamlPackages.ppxlib
   ];
 }
