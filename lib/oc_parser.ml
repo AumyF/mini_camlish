@@ -83,7 +83,8 @@ let get_div =
   let+ _ = get_slash in
   fun lhs rhs -> Expression.Div (lhs, rhs)
 
-let rec expr_9 i = (get_let_in <|> get_if_then_else <|> expr_6) i
+let rec expr_9 i =
+  (get_let_in <|> get_if_then_else <|> get_function <|> expr_6) i
 
 and get_equal_expr i = chainl1 expr_4 p_eq i
 
@@ -127,6 +128,14 @@ and get_let_in i =
    and+ _ = get_in
    and+ rest = value in
    Expression.Let (varname, varexpr, rest))
+    i
+
+and get_function i =
+  (let+ _ = get_fun
+   and+ param = get_identifier
+   and+ _ = get_arrow
+   and+ body = value in
+   Expression.Function (param, body))
     i
 
 let parse_string = parse_string

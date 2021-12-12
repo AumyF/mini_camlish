@@ -10,10 +10,15 @@ module Expression = struct
     | BoolLiteral of bool
     | If of t * t * t
     | Eq of t * t
+    | Function of string * t
+    | Apply of t * t
   [@@deriving eq, show]
 end
 
-type value = IntVal of int | BoolVal of bool
+type value =
+  | IntVal of int
+  | BoolVal of bool
+  | FunVal of string * Expression.t * (string * value) list
 
 let emptyenv () = []
 
@@ -58,9 +63,20 @@ let rec eval3 e env =
   | Let (varname, varexp, rest) ->
       let env = ext env varname (eval3 varexp env) in
       eval3 rest env
+  | Function (p, body) -> FunVal (p, body, env)
+  | Apply (ef, earg) -> (
+      match eval3 ef env with
+      | FunVal (p, body, env_of_fn) ->
+          let arg = eval3 earg env in
+          eval3 body (ext env_of_fn p arg)
+      | _ -> failwith "expected function")
+
 (* | _ -> failwith "unimplemented" *)
 
 let eval3_with_emptyenv e = eval3 e []
 
 let string_of_value v =
-  match v with IntVal n -> string_of_int n | BoolVal b -> string_of_bool b
+  match v with
+  | IntVal n -> string_of_int n
+  | BoolVal b -> string_of_bool b
+  | FunVal (p, body, _) -> Printf.sprintf "%s -> %s" p Expression.(show body)
