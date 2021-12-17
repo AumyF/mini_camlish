@@ -9,55 +9,61 @@ let parse_ipv4_address =
   in
   Parser.((fun x -> [ x ] |> String.of_list) <$> get_char)
 
+let parse_error =
+  let open Alcotest in
+  Parser.ParseError.(testable pp equal)
+
 let parse_result t =
-  Alcotest.option (Alcotest.pair t (Alcotest.list Alcotest.char))
+  let open Alcotest in
+  result (pair t (list char)) parse_error
 
 let test_middle () =
   Alcotest.(check (parse_result char))
     "whether both are same"
-    (Some ('b', []))
+    (Ok ('b', []))
     (Parser.parse_string Parser.get_middle "abc")
 
 let test_ipv4 () =
   Alcotest.(check (parse_result string))
     "correctly parse ipv4 address"
-    (Some ("1", []))
+    (Ok ("1", []))
     Parser.(parse_string parse_ipv4_address "1")
 
 let test_match_string () =
   Alcotest.(check (parse_result string))
     "correctly parse string"
-    (Some ("foo", [ 'b'; 'a'; 'r' ]))
+    (Ok ("foo", [ 'b'; 'a'; 'r' ]))
     Parser.(parse_string (match_string "foo") "foobar")
 
 let test_some () =
   Alcotest.(check (char |> list |> parse_result))
     "correctly parse some"
-    (Some ([ 'f'; 'f'; 'f' ], [ 'b'; 'a'; 'r' ]))
+    (Ok ([ 'f'; 'f'; 'f' ], [ 'b'; 'a'; 'r' ]))
     Parser.(parse_string (many (match_char 'f')) "fffbar");
 
   Alcotest.(check (char |> list |> parse_result))
     "correctly parse some"
-    (Some ([ 'x'; 'y'; 'z'; 'x'; 'y'; 'z'; 'x'; 'z'; 'y' ], [ 'b'; 'a'; 'r' ]))
+    (Ok ([ 'x'; 'y'; 'z'; 'x'; 'y'; 'z'; 'x'; 'z'; 'y' ], [ 'b'; 'a'; 'r' ]))
     Parser.(
       parse_string
         (many (satisfy (function 'x' .. 'z' -> true | _ -> false)))
         "xyzxyzxzybar");
 
   Alcotest.(check (char |> list |> parse_result))
-    "succeeds in parsing with string which contains zero f's" None
+    "succeeds in parsing with string which contains zero f's"
+    (Error Parser.ParseError.{ msg = "empty" })
     Parser.(parse_string (some (match_char 'f')) "efff")
 
 let test_many () =
   let parse ch = Parser.(parse_string (many (match_char ch))) in
   Alcotest.(check (char |> list |> parse_result))
     "correctly parse many"
-    (Some ([ 'f'; 'f'; 'f' ], [ 'b'; 'a'; 'r' ]))
+    (Ok ([ 'f'; 'f'; 'f' ], [ 'b'; 'a'; 'r' ]))
     (parse 'f' "fffbar");
 
   Alcotest.(check (char |> list |> parse_result))
     "succeeds in parsing with string which contains zero f's"
-    (Some ([], [ 'e'; 'f'; 'f'; 'f' ]))
+    (Ok ([], [ 'e'; 'f'; 'f'; 'f' ]))
     (parse 'f' "efff")
 
 let test_match_nat () =
@@ -65,16 +71,17 @@ let test_match_nat () =
 
   Alcotest.(check (int |> parse_result))
     "succeeds in parsing with string starts with a positive number"
-    (Some (12345, [ 'f'; 'o'; 'o' ]))
+    (Ok (12345, [ 'f'; 'o'; 'o' ]))
     (parse_string "12345foo");
 
   Alcotest.(check (int |> parse_result))
     "succeeds in parsing with string starts with a 0"
-    (Some (0, [ 'f'; 'o'; 'o' ]))
+    (Ok (0, [ 'f'; 'o'; 'o' ]))
     (parse_string "0foo");
 
   Alcotest.(check (int |> parse_result))
-    "fails in parsing with string starts with a negative number" None
+    "fails in parsing with string starts with a negative number"
+    (Error Parser.ParseError.{ msg = "empty" })
     (parse_string "-1321baz")
 
 let test_match_int () =
@@ -82,17 +89,17 @@ let test_match_int () =
 
   Alcotest.(check (int |> parse_result))
     "succeeds in parsing with string starts with a positive number"
-    (Some (1321, [ 'b'; 'a'; 'z' ]))
+    (Ok (1321, [ 'b'; 'a'; 'z' ]))
     (parse_string "1321baz");
 
   Alcotest.(check (int |> parse_result))
     "succeeds in parsing with string starts with a negative number"
-    (Some (-1321, [ 'b'; 'a'; 'z' ]))
+    (Ok (-1321, [ 'b'; 'a'; 'z' ]))
     (parse_string "-1321baz");
 
   Alcotest.(check (int |> parse_result))
     "succeeds in parsing with string starts with a -0"
-    (Some (0, [ 'b'; 'a'; 'z' ]))
+    (Ok (0, [ 'b'; 'a'; 'z' ]))
     (parse_string "-0baz")
 
 let test_match_identifier () =
@@ -100,13 +107,13 @@ let test_match_identifier () =
 
   Alcotest.(check (string |> parse_result))
     "succeeds in parsing with string starts with a lowercase"
-    (Some ("abc", [ ' '; 'f'; 'o' ]))
+    (Ok ("abc", [ ' '; 'f'; 'o' ]))
     (parse "abc fo");
 
   Alcotest.(check (string |> parse_result))
     "succeeds in parsing with string starts with a lowercase and includes some \
      digits"
-    (Some ("e38182", [ ' '; 'f'; 'o' ]))
+    (Ok ("e38182", [ ' '; 'f'; 'o' ]))
     (parse "e38182 fo")
 
 let test_get_list_of_uints () =
@@ -114,10 +121,10 @@ let test_get_list_of_uints () =
 
   Alcotest.(check (int |> list |> parse_result))
     "succeeds in parsing list of uints"
-    (Some ([ 1; 2; 3 ], [ ' '; 'f'; 'u' ]))
+    (Ok ([ 1; 2; 3 ], [ ' '; 'f'; 'u' ]))
     (parse "[1; 2; 3] fu");
 
   Alcotest.(check (int |> list |> parse_result))
     "succeeds in parsing list of uints with a trailing semicolon"
-    (Some ([ 1; 2; 3 ], [ ' '; 'f'; 'u' ]))
+    (Ok ([ 1; 2; 3 ], [ ' '; 'f'; 'u' ]))
     (parse "[1; 2; 3;] fu")

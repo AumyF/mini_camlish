@@ -2,8 +2,14 @@ open Containers
 
 let unimplemented name = failwith (name ^ "is not implemented!")
 
+module ParseError = struct
+  type t = { msg : string } [@@deriving eq, show]
+end
+
+let parse_err msg = Error ParseError.{ msg }
+
 module Result = struct
-  type 'a t = ('a * char list) option
+  type 'a t = ('a * char list, ParseError.t) result
 
   let pp = ""
 end
@@ -14,25 +20,27 @@ let parse p chars = chars |> p
 
 let parse_string p s = s |> String.to_list |> p
 
-let get_char = function [] -> None | c :: cs -> Some (c, cs)
+let get_char = function
+  | [] -> parse_err "expected char, got empty string"
+  | c :: cs -> Ok (c, cs)
 
 let map f p chars =
   match parse p chars with
-  | None -> None
-  | Some (v, chars') -> Some (f v, chars')
+  | Error _ as e -> e
+  | Ok (v, chars') -> Ok (f v, chars')
 
 let ( <$> ) = map
 
 (** Parser which always succeeds. *)
-let pure v chars = Some (v, chars)
+let pure v chars = Ok (v, chars)
 
 (** Parser which always fails. *)
-let empty _ = None
+let empty _ = parse_err "empty"
 
 let apply (p_f : ('a -> 'b) t) p_a chars =
   match parse p_f chars with
-  | None -> None
-  | Some (f, chars') -> parse (map f p_a) chars'
+  | Error _ as e -> e
+  | Ok (f, chars') -> parse (map f p_a) chars'
 
 let ( <*> ) = apply
 
@@ -48,15 +56,16 @@ let ( and+ ) xa ya = product xa ya
 
 (** If `xp` suceeds returns its result. Otherwise returns `yp`'s one. *)
 let either xp yp chars =
-  match parse xp chars with None -> parse yp chars | Some _ as r -> r
+  (* TODO: 両方のエラーメッセージを出す *)
+  match parse xp chars with Error _ -> parse yp chars | Ok _ as r -> r
 
 (** Binary operator version of `either`. If left parser suceeds returns its result. Otherwise returns right side's one. *)
 let ( <|> ) = either
 
 let bind (xp : 'a t) (fp : 'a -> 'b t) chars =
   match parse xp chars with
-  | None -> None
-  | Some (x, chars') -> parse (fp x) chars'
+  | Error _ as e -> e
+  | Ok (x, chars') -> parse (fp x) chars'
 
 let ( >>= ) = bind
 

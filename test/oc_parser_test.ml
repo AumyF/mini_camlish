@@ -5,50 +5,50 @@ let parse_result =
   let open Alcotest in
   let char_list = char |> list in
   let expression = Ast.Expression.(testable pp equal) in
-  pair expression char_list |> option
+  result (pair expression char_list) Parserlib_test.parse_error
 
 let test_addition () =
   Alcotest.(check parse_result)
     "whether both are same"
-    (Some Ast.Expression.(Plus (IntLiteral 3, IntLiteral 4), []))
+    (Ok Ast.Expression.(Plus (IntLiteral 3, IntLiteral 4), []))
     (parse_string value "3 + 4")
 
 let test_subtract () =
   Alcotest.(check parse_result)
     "whether both are same"
-    (Some Ast.Expression.(Subtract (IntLiteral 4, IntLiteral 3), []))
+    (Ok Ast.Expression.(Subtract (IntLiteral 4, IntLiteral 3), []))
     (parse_string value "4 - 3")
 
 let test_multiply () =
   Alcotest.(check parse_result)
     "whether both are same"
-    (Some Ast.Expression.(Times (IntLiteral 3, IntLiteral 4), []))
+    (Ok Ast.Expression.(Times (IntLiteral 3, IntLiteral 4), []))
     (parse_string value "3 * 4")
 
 let test_let_in () =
   Alcotest.(check parse_result)
     "whether both are same"
     (let open Ast.Expression in
-    Some (Let ("x", IntLiteral 4, VarRef "x"), []))
+    Ok (Let ("x", IntLiteral 4, VarRef "x"), []))
     (parse_string value "let x = 4 in x")
 
 let test_if_then_else () =
   let open Ast.Expression in
   Alcotest.(check parse_result)
     "whether both are same"
-    (Some (If (BoolLiteral true, IntLiteral 3, IntLiteral 9), []))
+    (Ok (If (BoolLiteral true, IntLiteral 3, IntLiteral 9), []))
     (parse_string value "if true then 3 else 9")
 
 let test_composed () =
   let open Ast.Expression in
   Alcotest.check parse_result "whether both are same"
-    (Some (Plus (Times (IntLiteral 3, IntLiteral 4), IntLiteral 9), []))
+    (Ok (Plus (Times (IntLiteral 3, IntLiteral 4), IntLiteral 9), []))
     (parse_string value "3 * 4 + 9")
 
 let test_composed2 () =
   let open Ast.Expression in
   Alcotest.check parse_result "whether both are same"
-    (Some (Plus (IntLiteral 3, Times (IntLiteral 4, IntLiteral 9)), []))
+    (Ok (Plus (IntLiteral 3, Times (IntLiteral 4, IntLiteral 9)), []))
     (parse_string value "3 + 4 * 9")
 
 let () =

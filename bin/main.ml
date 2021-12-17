@@ -9,8 +9,7 @@ let check =
 
 let c =
   let exp, _ =
-    Oc_parser.(Parser.parse_string value "let f = 3 in f")
-    |> Option.get_exn_or "parse error"
+    Oc_parser.(Parser.parse_string value "let f = 3 in f") |> Result.get_exn
   in
   Ast.(exp |> eval3_with_emptyenv |> string_of_value |> print_endline)
 
