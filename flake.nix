@@ -17,6 +17,29 @@
             mini-ocaml = pkgs.callPackage ./default.nix { };
           };
         defaultPackage = packages.mini-ocaml;
+
+        checks = {
+          test = pkgs.runCommand "dune-test"
+            {
+              buildInputs = [
+                pkgs.dune_2
+                pkgs.ocaml
+                pkgs.gcc
+                pkgs.ocamlPackages.findlib
+                pkgs.ocamlPackages.alcotest
+                pkgs.ocamlPackages.containers
+                pkgs.ocamlPackages.ppx_deriving
+                pkgs.ocamlPackages.ppxlib
+              ];
+            } ''
+            set -euo pipefail
+            
+            cp -r ${./.} ./test
+            dune test
+            touch $out
+          '';
+        };
+
         apps.mini-ocaml = flake-utils.lib.mkApp { drv = packages.mini-ocaml; };
         defaultApp = apps.mini-ocaml;
         devShell = pkgs.callPackage ./shell.nix { };
