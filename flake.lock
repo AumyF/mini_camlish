@@ -29,28 +29,10 @@
         "type": "indirect"
       }
     },
-    "opal": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1466628011,
-        "narHash": "sha256-6yivFpbh0/86gzAfk6pOL9CAnw94sJqyMVOy9aRW+mM=",
-        "owner": "pyrocat101",
-        "repo": "opal",
-        "rev": "33f4f507d9bb2d2a5502bf8ae8a4c67c9b587b25",
-        "type": "github"
-      },
-      "original": {
-        "owner": "pyrocat101",
-        "ref": "v0.1.1",
-        "repo": "opal",
-        "type": "github"
-      }
-    },
     "root": {
       "inputs": {
         "flake-utils": "flake-utils",
-        "nixpkgs": "nixpkgs",
-        "opal": "opal"
+        "nixpkgs": "nixpkgs"
       }
     }
   },
