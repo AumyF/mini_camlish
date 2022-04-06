@@ -51,6 +51,25 @@ let test_composed2 () =
     (Ok (Plus (IntLiteral 3, Times (IntLiteral 4, IntLiteral 9)), []))
     (parse_string value "3 + 4 * 9")
 
+let test_apply () =
+  let open Ast.Expression in
+  Alcotest.check parse_result "whether both are same"
+    (Ok
+       ( Let
+           ( "f",
+             Function ("x", Plus (VarRef "x", IntLiteral 1)),
+             Apply (VarRef "f", IntLiteral 3) ),
+         [] ))
+    (parse_string value "let f = fun x -> x + 1 in f 3")
+
+let test_apply_of_anonymous_function () =
+  let open Ast.Expression in
+  Alcotest.check parse_result "whether both are same"
+    (Ok
+       ( Apply (Function ("x", Plus (VarRef "x", IntLiteral 1)), IntLiteral 3),
+         [] ))
+    (parse_string value "(fun x -> x + 1) 3")
+
 let () =
   let open Alcotest in
   run "Oc_parser"
@@ -64,5 +83,8 @@ let () =
           test_case "multiply" `Quick test_multiply;
           test_case "composed" `Quick test_composed;
           test_case "composed2" `Quick test_composed2;
+          test_case "apply of anonymous function" `Quick
+            test_apply_of_anonymous_function;
+          test_case "apply" `Quick test_apply;
         ] );
     ]
