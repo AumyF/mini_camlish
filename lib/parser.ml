@@ -8,16 +8,13 @@ end
 
 let parse_err msg = Error ParseError.{ msg }
 
-module Result = struct
+module ParseResult = struct
   type 'a t = ('a * char list, ParseError.t) result
-
-  let pp = ""
 end
 
-type 'a t = char list -> 'a Result.t
+type 'a t = char list -> 'a ParseResult.t
 
 let parse p chars = chars |> p
-
 let parse_string p s = s |> String.to_list |> p
 
 let get_char = function
@@ -43,15 +40,10 @@ let apply (p_f : ('a -> 'b) t) p_a chars =
   | Ok (f, chars') -> parse (map f p_a) chars'
 
 let ( <*> ) = apply
-
 let ( <* ) xp yp = (fun x _ -> x) <$> xp <*> yp
-
 let ( *> ) xp yp = (fun _ x -> x) <$> xp <*> yp
-
 let product xp yp = (fun x y -> (x, y)) <$> xp <*> yp
-
 let ( let+ ) x f = map f x
-
 let ( and+ ) xa ya = product xa ya
 
 (** If `xp` suceeds returns its result. Otherwise returns `yp`'s one. *)
@@ -68,7 +60,6 @@ let bind (xp : 'a t) (fp : 'a -> 'b t) chars =
   | Ok (x, chars') -> parse (fp x) chars'
 
 let ( >>= ) = bind
-
 let ( let* ) x f = bind x f
 
 let satisfy predicate =
@@ -76,7 +67,6 @@ let satisfy predicate =
   if predicate x then pure x else empty
 
 let get_two = (fun x y -> [ x; y ]) <$> get_char <*> get_char
-
 let match_char ch = satisfy (Char.equal ch)
 
 let match_lowercase_ascii =
@@ -92,7 +82,6 @@ let match_digit =
   satisfy p
 
 let match_latin_ascii = match_lowercase_ascii <|> match_capital_ascii
-
 let match_alphanumetic_ascii = match_latin_ascii <|> match_digit
 
 let match_space =
@@ -134,9 +123,7 @@ let chainl1 x op =
   x >>= loop
 
 let chainl x op default = chainl1 x op <|> pure default
-
 let match_nat = int_of_string <$> (String.of_list <$> some match_digit)
-
 let match_int = match_nat <|> (( ~- ) <$> match_char '-' *> match_nat)
 
 let match_identifier =
@@ -148,11 +135,8 @@ let get_token p =
   spaces *> p <* spaces
 
 let get_identifier = get_token match_identifier
-
 let get_unsigned_int = get_token match_nat
-
 let get_int = get_token match_int
-
 let get_symbol s = get_token (match_string s)
 
 let get_list_of_uints =
