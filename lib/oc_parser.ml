@@ -82,7 +82,7 @@ and expr_4 i = (get_add_sub <|> expr_3) i
 
 and get_multiply_divide i = chainl1 expr_2 (get_multiply <|> get_div) i
 and expr_3 i = (get_multiply_divide <|> expr_2) i
-and paren_expr i = (get_paren_left *> expr_2 <* get_paren_right) i
+and paren_expr i = (get_paren_left *> expr_9 <* get_paren_right) i
 and expr_2 i = (get_apply <|> expr_1 <|> get_function) i
 and expr_1 i = (paren_expr <|> expr_0) i
 and expr_0 i = (get_bool_literal <|> get_varref <|> get_int_literal) i

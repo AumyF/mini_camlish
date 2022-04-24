@@ -10,7 +10,15 @@ open Mini_ocaml
 *)
 let c =
   let exp, _ =
-    Oc_parser.(Parser.parse_string value "(fun x -> x * x) 4") |> Result.get_exn
+    Oc_parser.(
+      Parser.parse_string value
+        {|
+      let x = 1 in
+      let f = fun y -> x + y in
+      let x = 2 in
+      f (x + 3)
+    |})
+    |> Result.get_exn
   in
   Ast.(exp |> eval3_with_emptyenv |> string_of_value |> print_endline)
 
