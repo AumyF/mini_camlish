@@ -2,6 +2,7 @@ module Expression = struct
   type t =
     | VarRef of string
     | Let of string * t * t
+    | LetRec of string * string * t * t
     | IntLiteral of int
     | Plus of t * t
     | Times of t * t
@@ -19,6 +20,7 @@ type value =
   | IntVal of int
   | BoolVal of bool
   | FunVal of string * Expression.t * (string * value) list
+  | RecFunVal of string * string * Expression.t * (string * value) list
 
 let emptyenv () = []
 
@@ -65,11 +67,19 @@ let rec eval3 e env =
   | Let (varname, varexp, rest) ->
       let env = ext varname (eval3 varexp env) env in
       eval3 rest env
+  | LetRec (fnname, paramname, body, rest) ->
+      let rec_fn = RecFunVal (fnname, paramname, body, env) in
+      let env = ext fnname rec_fn env in
+      eval3 rest env
   | Function (p, body) -> FunVal (p, body, env)
   | Apply (ef, earg) -> (
+      let fn = eval3 ef env in
       let arg = eval3 earg env in
-      match eval3 ef env with
+      match fn with
       | FunVal (p, body, env_of_fn) -> eval3 body (ext p arg env_of_fn)
+      | RecFunVal (fn_name, param_name, body, env_of_fn) ->
+          let env = env_of_fn |> ext param_name arg |> ext fn_name fn in
+          eval3 body env
       | _ -> failwith "expected function")
 
 (* | _ -> failwith "unimplemented" *)
@@ -80,4 +90,6 @@ let string_of_value v =
   match v with
   | IntVal n -> string_of_int n
   | BoolVal b -> string_of_bool b
-  | FunVal (p, body, _) -> Printf.sprintf "%s -> %s" p Expression.(show body)
+  | FunVal (p, body, _) -> Printf.sprintf "%s -> %s" p (Expression.show body)
+  | RecFunVal (fn_name, param_name, body, _) ->
+      Printf.sprintf "%s: %s -> %s" fn_name param_name (Expression.show body)

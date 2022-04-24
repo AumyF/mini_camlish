@@ -13,10 +13,12 @@ let c =
     Oc_parser.(
       Parser.parse_string value
         {|
-      let x = 1 in
-      let f = fun y -> x + y in
-      let x = 2 in
-      f (x + 3)
+      let rec f x =
+        if x = 0 then 1
+        else
+          x * f (x - 1)
+      in
+        f 4
     |})
     |> Result.get_exn
   in

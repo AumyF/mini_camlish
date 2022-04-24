@@ -70,7 +70,9 @@ let get_div =
   let+ _ = get_slash in
   fun lhs rhs -> Expression.Div (lhs, rhs)
 
-let rec expr_9 i = (get_let_in <|> get_if_then_else <|> expr_6) i
+let rec expr_9 i =
+  (get_let_rec_in <|> get_let_in <|> get_if_then_else <|> expr_6) i
+
 and get_equal_expr i = chainl1 expr_4 p_eq i
 and expr_6 i = (get_equal_expr <|> expr_4) i
 and get_add_sub i = chainl1 expr_3 (p_add <|> p_subtract) i
@@ -114,6 +116,29 @@ and get_function i =
    and+ _ = get_arrow
    and+ body = value in
    Expression.Function (param, body))
+    i
+
+and get_let_fn i =
+  (let+ _ = get_let
+   and+ fnname = get_identifier
+   and+ param = get_identifier
+   and+ _ = get_equal
+   and+ body = value
+   and+ _ = get_in
+   and+ rest = value in
+   Expression.Let (fnname, Expression.Function (param, body), rest))
+    i
+
+and get_let_rec_in i =
+  (let+ _ = get_let
+   and+ _ = get_rec
+   and+ fnname = get_identifier
+   and+ param = get_identifier
+   and+ _ = get_equal
+   and+ body = value
+   and+ _ = get_in
+   and+ rest = value in
+   Expression.LetRec (fnname, param, body, rest))
     i
 
 and get_apply i =
