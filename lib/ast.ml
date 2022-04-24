@@ -34,7 +34,9 @@ let rec lookup x env =
 let rec eval3 e env =
   let binop f (e1, e2) env =
     let eval e = eval3 e env in
-    match (eval e1, eval e2) with
+    let v2 = eval e2 in
+    let v1 = eval e1 in
+    match (v1, v2) with
     | IntVal n1, IntVal n2 -> IntVal (f n1 n2)
     | _ -> failwith "integer expected"
   in
@@ -65,10 +67,9 @@ let rec eval3 e env =
       eval3 rest env
   | Function (p, body) -> FunVal (p, body, env)
   | Apply (ef, earg) -> (
+      let arg = eval3 earg env in
       match eval3 ef env with
-      | FunVal (p, body, env_of_fn) ->
-          let arg = eval3 earg env in
-          eval3 body (ext env_of_fn p arg)
+      | FunVal (p, body, env_of_fn) -> eval3 body (ext env_of_fn p arg)
       | _ -> failwith "expected function")
 
 (* | _ -> failwith "unimplemented" *)
