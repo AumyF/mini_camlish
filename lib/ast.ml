@@ -23,7 +23,7 @@ type value =
 let emptyenv () = []
 
 (* 環境に変数を追加する *)
-let ext env x v = (x, v) :: env
+let ext x v env = (x, v) :: env
 
 (* 環境に変数が含まれているか探す。なかったら例外 *)
 let rec lookup x env =
@@ -63,13 +63,13 @@ let rec eval3 e env =
       | BoolVal false -> eval3 else_exp env
       | _ -> failwith "predicate is not of type bool")
   | Let (varname, varexp, rest) ->
-      let env = ext env varname (eval3 varexp env) in
+      let env = ext varname (eval3 varexp env) env in
       eval3 rest env
   | Function (p, body) -> FunVal (p, body, env)
   | Apply (ef, earg) -> (
       let arg = eval3 earg env in
       match eval3 ef env with
-      | FunVal (p, body, env_of_fn) -> eval3 body (ext env_of_fn p arg)
+      | FunVal (p, body, env_of_fn) -> eval3 body (ext p arg env_of_fn)
       | _ -> failwith "expected function")
 
 (* | _ -> failwith "unimplemented" *)
